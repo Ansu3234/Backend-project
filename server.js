@@ -11,25 +11,42 @@ const app = express();
 // 🔧 Middleware Setup
 // ====================
 
-// ✅ Proper CORS setup for both local + Render frontend
+// ✅ Allow both Render + Localhost (frontend URLs)
 const allowedOrigins = [
-  "https://frontend-project-1-jlrj.onrender.com", // your deployed frontend
-  "http://localhost:3000" // for local testing
+  "https://frontend-project-1-jlrj.onrender.com", // Deployed frontend
+  "http://localhost:3000" // Local dev frontend
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps, curl, etc.)
+      // ✅ Allow requests with no Origin (like mobile apps, Postman, or server-to-server)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error("CORS not allowed for this origin: " + origin));
+
+      // ✅ Check allowed origins
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        console.warn("🚫 CORS blocked for origin:", origin);
+        return callback(new Error("CORS not allowed for this origin: " + origin));
+      }
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin"
+    ],
   })
 );
 
+// ✅ Handle preflight requests (OPTIONS)
+app.options("*", cors());
+
+// ✅ Parse JSON
 app.use(express.json());
 
 // ====================
